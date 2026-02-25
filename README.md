@@ -28,7 +28,7 @@ USAGE Launch the executable. Provide BMC IP or hostname, username, and
 password. Enter system identifier, product number, and serial number.
 Optionally test BMC connectivity. Run commands and review output.
 
-COMMANDS EXECUTED 
+COMMANDS EXECUTED
 OneCli.exe config set
 SYSTEM_PROD_DATA.SysInfoProdIdentifier “IDENTIFIER” –bmc
 USER:PASS@BMC_IP 
