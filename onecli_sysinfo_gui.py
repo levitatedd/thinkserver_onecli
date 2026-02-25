@@ -7,7 +7,7 @@ import webbrowser
 from tkinter import ttk, filedialog, messagebox
 
 APP_NAME = "OneCli System Product Data Tool"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.2.0"
 
 ONECLI_DEFAULT_NAME = "OneCli.exe"
 
