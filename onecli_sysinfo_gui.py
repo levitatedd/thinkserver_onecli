@@ -6,6 +6,9 @@ import tkinter as tk
 import webbrowser
 from tkinter import ttk, filedialog, messagebox
 
+APP_NAME = "OneCli System Product Data Tool"
+APP_VERSION = "1.0.0"
+
 ONECLI_DEFAULT_NAME = "OneCli.exe"
 
 
@@ -33,7 +36,7 @@ def quote_arg(a: str) -> str:
 class OneCliSysInfoGUI(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Lenovo OneCli - Set System Product Data")
+        self.title(f"{APP_NAME} v{APP_VERSION}")
         self.bmc_test_status = tk.StringVar(value="❔")
         self.minsize(780, 540)
 
@@ -45,6 +48,9 @@ class OneCliSysInfoGUI(tk.Tk):
         self.identifier = tk.StringVar(value="ThinkSystem SR850 V2")
         self.product_name = tk.StringVar(value="7D32CTO1WW")
         self.serial_number = tk.StringVar(value="J1003NP6")
+        
+        for var in (self.bmc_ip, self.username, self.password):
+            var.trace_add("write", lambda *args: self.invalidate_bmc_test())
 
         self.onecli_path.trace_add("write", lambda *args: self.refresh_onecli_ui_state())
 
@@ -60,7 +66,7 @@ class OneCliSysInfoGUI(tk.Tk):
             return
 
         self.bmc_test_status.set("⏳")
-        self.status.set("Testing BMC connection...")
+        self.status.set("Status: Testing BMC connection...")
 
         thread = threading.Thread(target=self.test_bmc_thread, daemon=True)
         thread.start()
@@ -96,10 +102,17 @@ class OneCliSysInfoGUI(tk.Tk):
     def on_bmc_test_finished(self, success: bool):
         if success:
             self.bmc_test_status.set("✅")
-            self.status.set("BMC connection successful.")
+            self.status.set("Status: BMC connection successful (ready to run)")
+            self.run_btn.configure(state="normal")
         else:
             self.bmc_test_status.set("❌")
-            self.status.set("BMC connection failed.")
+            self.status.set("Status: BMC connection failed")
+            self.run_btn.configure(state="disabled")
+    
+    def invalidate_bmc_test(self):
+        self.bmc_test_status.set("❔")
+        self.status.set("Status: Not tested")
+        self.run_btn.configure(state="disabled")
     
     def open_onecli_download(self, event=None):
         webbrowser.open("https://download.lenovo.com/servers/mig/2023/11/16/58699/lnvgy_utl_lxce_onecli01l-4.3.0_winsrv_x86-64.zip")
@@ -176,20 +189,25 @@ class OneCliSysInfoGUI(tk.Tk):
         btns = ttk.Frame(main)
         btns.pack(fill="x", pady=(0, pad))
 
-        self.run_btn = ttk.Button(btns, text="Run Commands", command=self.on_run_clicked)
-        self.run_btn.pack(side="left")
-
-        ttk.Button(btns, text="Show Commands (Preview)", command=self.preview_commands).pack(side="left", padx=(8, 0))
-        ttk.Button(btns, text="Clear Output", command=self.clear_output).pack(side="left", padx=(8, 8))
-
-        self.status = tk.StringVar(value="Ready.")
-        ttk.Label(btns, textvariable=self.status).pack(side="right")
-        
         ttk.Button(
         btns,
         text="Test BMC Connection",
         command=self.on_test_bmc_clicked
         ).pack(side="left", padx=(0, 8))
+
+        self.run_btn = ttk.Button(
+            btns,
+            text="Run Commands",
+            command=self.on_run_clicked,
+            state="disabled"
+        )
+        self.run_btn.pack(side="left")
+
+        ttk.Button(btns, text="Show Commands (Preview)", command=self.preview_commands).pack(side="left", padx=(8, 0))
+        ttk.Button(btns, text="Clear Output", command=self.clear_output).pack(side="left", padx=(8, 8))
+
+        self.status = tk.StringVar(value="Status: Not tested")
+        ttk.Label(btns, textvariable=self.status).pack(side="right")
         
         self.bmc_status_label = ttk.Label(btns, textvariable=self.bmc_test_status, font=("Segoe UI", 14))
         self.bmc_status_label.pack(side="left", padx=(0, 0))
@@ -211,7 +229,7 @@ class OneCliSysInfoGUI(tk.Tk):
 
         ttk.Label(
         footer,
-        text="Tested with Lenovo OneCli v4.3.0",
+        text=f"v{APP_VERSION} | Tested with Lenovo OneCli v4.3.0",
         style="Footer.TLabel"
         ).pack(side="right", padx=8)
 
@@ -341,7 +359,7 @@ class OneCliSysInfoGUI(tk.Tk):
             return
 
         self.run_btn.configure(state="disabled")
-        self.status.set("Running...")
+        self.status.set("Status: Running commands...")
         self.log("=== Running OneCli commands ===")
 
         thread = threading.Thread(target=self.run_commands_thread, daemon=True)
@@ -381,7 +399,11 @@ class OneCliSysInfoGUI(tk.Tk):
 
     def on_run_finished(self, any_fail: bool):
         self.run_btn.configure(state="normal")
-        self.status.set("Done." if not any_fail else "Completed with errors.")
+        self.status.set(
+            "Status: Completed successfully"
+            if not any_fail
+            else "Status: Completed with errors"
+        )
         if any_fail:
             messagebox.showwarning("Finished", "Completed with errors. Check Output for details.")
         else:
