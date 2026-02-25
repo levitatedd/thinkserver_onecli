@@ -206,11 +206,20 @@ class OneCliSysInfoGUI(tk.Tk):
         ttk.Button(btns, text="Show Commands (Preview)", command=self.preview_commands).pack(side="left", padx=(8, 0))
         ttk.Button(btns, text="Clear Output", command=self.clear_output).pack(side="left", padx=(8, 8))
 
+        # Status area (emoji + text together on the right)
         self.status = tk.StringVar(value="Status: Not tested")
-        ttk.Label(btns, textvariable=self.status).pack(side="right")
-        
-        self.bmc_status_label = ttk.Label(btns, textvariable=self.bmc_test_status, font=("Segoe UI", 14))
-        self.bmc_status_label.pack(side="left", padx=(0, 0))
+
+        status_frame = ttk.Frame(btns)
+        status_frame.pack(side="right")
+
+        self.bmc_status_label = ttk.Label(
+            status_frame,
+            textvariable=self.bmc_test_status,
+            font=("Segoe UI", 14)
+        )
+        self.bmc_status_label.pack(side="left", padx=(0, 4))
+
+        ttk.Label(status_frame, textvariable=self.status).pack(side="left")
 
         # --- Output area
         out_frame = ttk.LabelFrame(main, text="Output")
