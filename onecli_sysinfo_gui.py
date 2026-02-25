@@ -45,9 +45,9 @@ class OneCliSysInfoGUI(tk.Tk):
         self.bmc_ip = tk.StringVar()
         self.username = tk.StringVar()
         self.password = tk.StringVar()
-        self.identifier = tk.StringVar(value="ThinkSystem SR850 V2")
-        self.product_name = tk.StringVar(value="7D32CTO1WW")
-        self.serial_number = tk.StringVar(value="J1003NP6")
+        self.identifier = tk.StringVar(value="ex: ThinkSystem SR850 V2")
+        self.product_name = tk.StringVar(value="ex: 7D32CTO1WW")
+        self.serial_number = tk.StringVar(value="ex: J1003NP6")
         
         for var in (self.bmc_ip, self.username, self.password):
             var.trace_add("write", lambda *args: self.invalidate_bmc_test())
